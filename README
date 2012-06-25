@@ -1,0 +1,10 @@
+Um aplicativo, criado em Python utilizando o framework Flask.
+
+É um simples uploader de vídeos, que prevê o compartilhamento do código para "embutir" a visualização do mesmo em outro site. Serve basicamente como um repositorio de vídeos.
+
+Tem também meio de assistir os vídeos online com o player.
+
+É possível ativar ou desativar o login para acesso/upload vídeos.
+
+Criador: Sergio Berlotto Jr, email: sergio.berlotto@gmail.com
+

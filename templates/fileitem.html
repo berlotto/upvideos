@@ -1,0 +1,11 @@
+{% for file in files|sort(attribute='date',reverse=True) %}
+<div id='files-item'>
+    <a href="#" id="icon-code" filename="{{file.filename}}"></a>
+    <a href="#" id="icon-play"></a>
+    <a href="/v/{{file.filename}}">{{file.filename}}</a><br/>
+    <span id="filesize">Tamanho: {{file.size}}</span><br/>
+    <span id="filesize">Data: {{file.date}}</span>
+</div>
+{% endfor %}
+<div id="divSnippet" title="Embedded code"></div>
+
