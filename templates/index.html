@@ -5,6 +5,8 @@
         <script type="text/javascript" src="/static/ui/js/jquery-1.7.2.min.js"></script>
         <script type="text/javascript" src="/static/ui/js/jquery-ui-1.8.21.custom.min.js"></script>
         
+        <script type="text/javascript" src="/static/js/jquery.snippet.min.js"></script>
+        
         <!--
         HTML 5 Upload template based on :
         http://www.matlus.com/html5-file-upload-with-progress/
@@ -12,6 +14,8 @@
         
         <link href="/static/css/uploader.css" rel="stylesheet" type="text/css">
         <link href="/static/css/layout.css" rel="stylesheet" type="text/css">
+            
+        <link href="/static/css/jquery.snippet.min.css" rel="stylesheet" type="text/css">
         
         <script type="text/javascript">
         var bytesUploaded = 0;
@@ -48,6 +52,9 @@
             fd.append("author", "Sergio Berlotto");
             fd.append("name", "Html 5 File API/FormData");
             fd.append("fileToUpload", document.getElementById('fileToUpload').files[0]);
+            if( document.getElementById('poster').files.length > 0 ){
+                fd.append("poster", document.getElementById('poster').files[0]);
+            }
     
             /* If you want to simply post the entire form, use this */
             //var fd = document.getElementById('form1').getFormData();
@@ -118,7 +125,20 @@
                 $('a#icon-code').click(function(){
                     //alert('clicado ' + $(this).attr('filename'));
                     $('#divSnippet').attr('title','Copie o codigo para seu site');
-                    $('#divSnippet').load('/snippet/' + $(this).attr('filename'));
+                    $('#divSnippet').load('/snippet/' + $(this).attr('filename'), function(){
+                        $('#divSnippet').dialog({
+                            modal: true,
+                            width: 900,
+                            height: 300
+                        });
+                        $("pre.htmlCode").snippet("html",{style:"dull",transparent:true,showNum:true});
+                    });
+                    return false;
+                });
+                $('a#icon-play').click(function(){
+                    //alert('clicado ' + $(this).attr('filename'));
+                    $('#divSnippet').attr('title','Veja o video');
+                    $('#divSnippet').load('/play/' + $(this).attr('filename'));
                     $('#divSnippet').dialog({
                         modal: true,
                         width: 800,
@@ -126,14 +146,15 @@
                     });
                     return false;
                 });
-                $('a#icon-play').click(function(){
+                
+                $('a#icon-poster').click(function(){
                     //alert('clicado ' + $(this).attr('filename'));
-                    $('#divSnippet').attr('title','Veja o video');
-                    $('#divSnippet').load('/snippet/' + $(this).attr('filename'));
+                    $('#divSnippet').attr('title','Poster do video');
+                    $('#divSnippet').load('/poster/view/' + $(this).attr('filename'));
                     $('#divSnippet').dialog({
                         modal: true,
-                        width: 800,
-                        height: 600
+                        width: 640,
+                        height: 480
                     });
                     return false;
                 });
@@ -147,12 +168,16 @@
         <div id="uploader-collumn">
             <form id="form1" enctype="multipart/form-data" method="post" action="/upload">
               <div class="row">
-                <label for="fileToUpload">Selecione o arquivo para enviar</label><br />
+                <label for="fileToUpload">Selecione o arquivo de vídeo</label><br />
                 <input type="file" name="fileToUpload" id="fileToUpload" onchange="fileSelected();"/>
               </div>
               <div id="fileName"></div>
               <div id="fileSize"></div>
               <div id="fileType"></div>
+              <div class="row">
+                <label for="poster">Poster do vídeo:</label><br />
+                <input type="file" id="poster" name="poster" value="" />
+              </div>
               <div class="row">
                 <input type="button" onclick="uploadFile()" value="Upload" />
               </div>

@@ -16,18 +16,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from flask import Flask, request, session, url_for, redirect, \
-     render_template, abort, flash, jsonify, send_from_directory
+     render_template, abort, flash, jsonify, send_from_directory, \
+     make_response
 from flaskext.uploads import UploadSet
 import sys
 import os
 import time
+import re
 from stat import *
 from werkzeug import secure_filename
 
+#Actual directory
+PWD = os.path.dirname(os.path.realpath(__file__))
+
 #---------------------------------------------------------------------
-UPLOADED_FILES_DEST = '/home/berlotto/Desenvolvimento/upvideos/uploads/'
+UPLOADED_FILES_DEST = os.path.join(PWD, 'uploads')
 UPLOADED_FILES_ALLOW = set(['ogg', 'ogv', 'webm', 'mp4'])
 UPLOADED_FILES_DENY = ''
+APP_PORT = 8000
+APP_HOST = "0.0.0.0"
 #---------------------------------------------------------------------
 
 try:
@@ -63,7 +70,7 @@ def index():
 def upload():
     #print "Uploading..."
     if request.method == 'POST':
-        #print "Tem", len(request.files), "arquivos!"
+        print "Tem", len(request.files), "arquivos!"
         if len(request.files) <= 0:
             return "Voc&ecirc; n&atilde;o enviou nenhum v&iacute;deo."
         try:
@@ -73,6 +80,14 @@ def upload():
                 filename = secure_filename(f.filename)
                 f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 #print 'filename=', filename
+                #Trata o poster
+                if len(request.files) > 1 :
+                    print "Saving poster"
+                    poster_file = request.files['poster']
+                    print poster_file.filename
+                    pFileName = "poster_%s_%s" % (secure_filename(filename), secure_filename(poster_file.filename))
+                    poster_file.save(os.path.join(app.config['UPLOAD_FOLDER'], pFileName))
+                    
                 return "Seu arquivo <i>%s</i> foi recebido com sucesso!" % filename
             else:
                 return "Exten&ccedil;&atilde;o de arquivo n&atilde;o permitida!"
@@ -106,15 +121,41 @@ def lista():
     for dirname, dirnames, filenames in os.walk(UPLOADED_FILES_DEST):
         for filename in filenames:
             #print os.path.join(dirname, filename)
-            st = os.stat(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            arquivos.append({'filename': filename, 'size': getSize(st[ST_SIZE]),
-                             'date': time.asctime(time.localtime(st[ST_MTIME]))})
+            if allowed_file(filename):
+                st = os.stat(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                arquivos.append({'filename': filename, 'size': getSize(st[ST_SIZE]),
+                                 'date': time.asctime(time.localtime(st[ST_MTIME])),
+                                 'poster': has_poster(filename) })
     return render_template('fileitem.html', files=arquivos)
 
 
 @app.route('/v/<filename>')
 def show(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+def has_poster(filename):
+    f = re.compile('^poster_%s' % filename)
+    for dirname, dirnames, filenames in os.walk(UPLOADED_FILES_DEST):
+        for filename in filenames:
+            if f.match(filename):
+                return True
+    return False
+
+
+@app.route('/poster/<filename>')
+def show_p(filename):
+    f = re.compile('^poster_%s' % filename)
+    for dirname, dirnames, filenames in os.walk(UPLOADED_FILES_DEST):
+        for filename in filenames:
+            if f.match(filename):
+                return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    return None
+
+
+@app.route('/poster/view/<filename>')
+def view_p(filename):
+    return render_template('poster.html', filename=filename )
 
 
 @app.route('/play/<filename>')
@@ -124,7 +165,10 @@ def player(filename):
 
 @app.route('/snippet/<filename>')
 def snippet(filename):
-    return render_template('snippet.html', filename=filename)
+    response = make_response(render_template('snippet.html', filename=filename))
+    response.headers["Content-type"] = "text/plain"
+    return response
+    #return render_template('snippet.html', filename=filename)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8000, host='0.0.0.0')
+    app.run(debug=True, port=APP_PORT, host=APP_HOST)

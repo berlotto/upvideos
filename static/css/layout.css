@@ -10,6 +10,7 @@ body{
 }
 
 #listfiles{
+    margin-left: 15px;
     float: left;
     background-color: transparent;
     border: 0px dotted #c5c5c5;
@@ -27,6 +28,7 @@ body{
     box-shadow: 0 0 5px #ccc;
     background-image: -moz-linear-gradient(top, #ffcc00, #FFFF99);
     background-image: -webkit-gradient(linear, left top, left bottom, from(#ffcc00), to(#FFFF99));
+    font-size: 9px;
 }
 
 #icon-code{
@@ -41,8 +43,19 @@ body{
 #icon-play{
     width: 32px;
     height: 32px;
-    float: right;
+    float: left;
+    margin-right: 5px;
     background-image: url('/static/img/play2.png');
+    background-position: 0px 0px;
+    background-repeat: no-repeat;
+}
+
+#icon-poster{
+    width: 32px;
+    height: 32px;
+    float: right;
+    margin-right: 5px;
+    background-image: url('/static/img/poster.png');
     background-position: 0px 0px;
     background-repeat: no-repeat;
 }
