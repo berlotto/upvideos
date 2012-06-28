@@ -35,6 +35,7 @@ UPLOADED_FILES_ALLOW = set(['ogg', 'ogv', 'webm', 'mp4'])
 UPLOADED_FILES_DENY = ''
 APP_PORT = 8000
 APP_HOST = "0.0.0.0"
+APP_URL = 'localhost:8000'
 #---------------------------------------------------------------------
 
 try:
@@ -44,6 +45,7 @@ except:
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOADED_FILES_DEST
+app.config['URL'] = APP_URL
 
 UPLOADED_FILES_ALLOW = ('ogg', 'ogv', 'webm', 'mp4')
 videos = UploadSet('videos', UPLOADED_FILES_ALLOW)
@@ -53,11 +55,45 @@ videos = UploadSet('videos', UPLOADED_FILES_ALLOW)
 
 def allowed_file(filename):
     '''
-    Verify the allowed file extensions
+    Verifica as extensoes permitidas para os videos.
     '''
     print "Verifiing %s " % filename
     return '.' in filename and filename.rsplit('.', 1)[1] in UPLOADED_FILES_ALLOW
 
+
+def getSize(size):
+    '''
+    Retorna o tamanho de um arquivo, em formato humano.
+    '''
+    if (size > 1024 * 1024):
+        bytesTransfered = str(round(size * 100 / (1024 * 1024)) / 100) + 'MB'
+    elif(size > 1024):
+        bytesTransfered = str(round(size * 100 / 1024) / 100) + 'KB'
+    else:
+        bytesTransfered = str(round(size * 100) / 100) + 'Bytes'
+    return bytesTransfered
+
+
+def has_poster(filename):
+    '''
+    Verifica se o video tem imagem de poster.
+    '''
+    f = re.compile('^poster_%s' % filename)
+    for dirname, dirnames, filenames in os.walk(UPLOADED_FILES_DEST):
+        for filename in filenames:
+            if f.match(filename):
+                return True
+    return False
+
+
+def getDimension(filename):
+    '''
+    Le o arquivo de configuracao do video e retorna os valores para WIDTH e HEIGHT
+    '''
+    f = open(os.path.join(app.config['UPLOAD_FOLDER'], "%s.txt" % filename[:-4]))
+    linha = f.readline()
+    width, height = [int(x) for x in linha.split('=')[1].split("x")]
+    return width, height
 #---------------------------------------------------------------------
 
 
@@ -70,7 +106,7 @@ def index():
 def upload():
     #print "Uploading..."
     if request.method == 'POST':
-        print "Tem", len(request.files), "arquivos!"
+        print "Tem", len(request.files), "arquivos!", request.form['size']
         if len(request.files) <= 0:
             return "Voc&ecirc; n&atilde;o enviou nenhum v&iacute;deo."
         try:
@@ -79,15 +115,17 @@ def upload():
                 #print dir(f)
                 filename = secure_filename(f.filename)
                 f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                #print 'filename=', filename
+                #Grava as informacoes adicionais em um arquivo texto
+                file_infos = open("%s.txt" % os.path.join(app.config['UPLOAD_FOLDER'], filename)[:-4], 'w')
+                file_infos.write("SIZE=%s" % request.form['size'])
+                file_infos.close()
                 #Trata o poster
-                if len(request.files) > 1 :
+                if len(request.files) > 1:
                     print "Saving poster"
                     poster_file = request.files['poster']
                     print poster_file.filename
                     pFileName = "poster_%s_%s" % (secure_filename(filename), secure_filename(poster_file.filename))
                     poster_file.save(os.path.join(app.config['UPLOAD_FOLDER'], pFileName))
-                    
                 return "Seu arquivo <i>%s</i> foi recebido com sucesso!" % filename
             else:
                 return "Exten&ccedil;&atilde;o de arquivo n&atilde;o permitida!"
@@ -105,16 +143,6 @@ def upload():
         return render_template('index.html')
 
 
-def getSize(size):
-    if (size > 1024 * 1024):
-        bytesTransfered = str(round(size * 100 / (1024 * 1024)) / 100) + 'MB'
-    elif(size > 1024):
-        bytesTransfered = str(round(size * 100 / 1024) / 100) + 'KB'
-    else:
-        bytesTransfered = str(round(size * 100) / 100) + 'Bytes'
-    return bytesTransfered
-
-
 @app.route('/lista-videos')
 def lista():
     arquivos = []
@@ -125,22 +153,13 @@ def lista():
                 st = os.stat(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 arquivos.append({'filename': filename, 'size': getSize(st[ST_SIZE]),
                                  'date': time.asctime(time.localtime(st[ST_MTIME])),
-                                 'poster': has_poster(filename) })
-    return render_template('fileitem.html', files=arquivos)
+                                 'poster': has_poster(filename)})
+    return render_template('fileitem.html', files=arquivos, url=app.config['URL'])
 
 
 @app.route('/v/<filename>')
 def show(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-
-def has_poster(filename):
-    f = re.compile('^poster_%s' % filename)
-    for dirname, dirnames, filenames in os.walk(UPLOADED_FILES_DEST):
-        for filename in filenames:
-            if f.match(filename):
-                return True
-    return False
 
 
 @app.route('/poster/<filename>')
@@ -155,17 +174,19 @@ def show_p(filename):
 
 @app.route('/poster/view/<filename>')
 def view_p(filename):
-    return render_template('poster.html', filename=filename )
+    return render_template('poster.html', filename=filename, url=app.config['URL'])
 
 
 @app.route('/play/<filename>')
 def player(filename):
-    return render_template('play.html', filename=filename)
+    w, h = getDimension(filename)
+    return render_template('play.html', filename=filename, w=w, h=h, poster=has_poster(filename), url=app.config['URL'])
 
 
 @app.route('/snippet/<filename>')
 def snippet(filename):
-    response = make_response(render_template('snippet.html', filename=filename))
+    w, h = getDimension(filename)
+    response = make_response(render_template('snippet.html', filename=filename, w=w, h=h, url=app.config['URL']))
     response.headers["Content-type"] = "text/plain"
     return response
     #return render_template('snippet.html', filename=filename)

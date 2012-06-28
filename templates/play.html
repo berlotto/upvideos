@@ -1,19 +1,19 @@
 <html lang="pt-br">
     <head>
-        <link href="/static/video-js/video-js.css" rel="stylesheet">
-        <script src="/static/video-js/video.js"></script>
-        <script>
-          _V_.options.flash.swf = "/static/video-js/video-js.swf"
-        </script>
+        <link href="http://vjs.zencdn.net/c/video-js.css" rel="stylesheet">
+        <script src="http://vjs.zencdn.net/c/video.js"></script>
     </head>
     <body>
         
         <h1>V&iacute;deo: <em>{{filename}}</em></h1>
         
-        <video id="my_video_1" class="video-js vjs-default-skin" controls
-            preload="auto" width="640" height="264" 
+        <video id="{{filename}}" class="video-js vjs-default-skin" controls
+            preload="auto" width="{{w}}" height="{{h}}"
+            {% if poster %}
+            poster="http://{{url}}/poster/{{filename}}"
+            {% endif %}
             data-setup="{}">
-            <source src="http://localhost:8000/v/{{filename}}" type='video/mp4'>
+            <source src="http://{{url}}/v/{{filename}}" type='video/mp4'>
         </video>
         
     </body>

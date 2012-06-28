@@ -44,7 +44,7 @@
             document.getElementById('progressNumber').innerHTML = '';
             var progressBar = document.getElementById('progressBar');
             progressBar.style.display = 'block';
-            progressBar.style.width = '0px';        
+            progressBar.style.width = '0px';
             
             /* If you want to upload only a file along with arbitary data that
                is not in the form, use this */
@@ -55,6 +55,8 @@
             if( document.getElementById('poster').files.length > 0 ){
                 fd.append("poster", document.getElementById('poster').files[0]);
             }
+            fd.append("size", document.getElementById('t_w').value + 'x' +
+                      document.getElementById('t_h').value);
     
             /* If you want to simply post the entire form, use this */
             //var fd = document.getElementById('form1').getFormData();
@@ -131,7 +133,7 @@
                             width: 900,
                             height: 300
                         });
-                        $("pre.htmlCode").snippet("html",{style:"dull",transparent:true,showNum:true});
+                        $("pre.htmlCode").snippet("html",{style:"dull",transparent:true,showNum:false});
                     });
                     return false;
                 });
@@ -177,6 +179,11 @@
               <div class="row">
                 <label for="poster">Poster do vídeo:</label><br />
                 <input type="file" id="poster" name="poster" value="" />
+              </div>
+              <div class="row">
+                <label for="poster">Tamanho (W x H):</label><br />
+                <input type="text" id="t_w" name="t_w" value="" size="3" />&nbsp;X&nbsp;
+                <input type="text" id="t_h" name="t_h" value="" size="3" />
               </div>
               <div class="row">
                 <input type="button" onclick="uploadFile()" value="Upload" />
