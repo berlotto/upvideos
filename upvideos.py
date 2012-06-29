@@ -1,3 +1,4 @@
+﻿# -*- coding: UTF-8 -*-
 # Copyright (C) 2012  Governo do Estado do Rio Grande do Sul
 #
 #   Author: Sergio Berlotto <sergio.berlotto@gmail.com>
@@ -19,6 +20,9 @@ from flask import Flask, request, session, url_for, redirect, \
      render_template, abort, flash, jsonify, send_from_directory, \
      make_response
 from flaskext.uploads import UploadSet
+from flask.ext.login import (LoginManager, current_user, login_required,
+                            login_user, logout_user, UserMixin, AnonymousUser,
+                            confirm_login, fresh_login_required)
 import sys
 import os
 import time
@@ -36,6 +40,7 @@ UPLOADED_FILES_DENY = ''
 APP_PORT = 8000
 APP_HOST = "0.0.0.0"
 APP_URL = 'localhost:8000'
+SECRET_KEY = "yeah, not actually a secret"
 #---------------------------------------------------------------------
 
 try:
@@ -46,9 +51,95 @@ except:
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOADED_FILES_DEST
 app.config['URL'] = APP_URL
+app.config['SECRET_KEY'] = SECRET_KEY
 
 UPLOADED_FILES_ALLOW = ('ogg', 'ogv', 'webm', 'mp4')
 videos = UploadSet('videos', UPLOADED_FILES_ALLOW)
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.login_message = 'Necess&aacute;rio efetuar o login.'
+login_manager.setup_app(app)
+
+#---------------------------------------------------------------------
+
+
+@app.route("/secret")
+@fresh_login_required
+def secret():
+    return render_template("secret.html")
+
+
+class User(UserMixin):
+
+    def __init__(self, id, senha, nome=''):
+        self.usuarioid = id
+        self.senha = senha
+        self.nome = nome
+
+    def senha_valida(self, senha_form):
+        return senha_form and senha_form == self.senha
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        for user in USUARIOS:
+            if user[0] == self.usuarioid:
+                return True
+        else:
+            return False
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.usuarioid
+
+
+try:
+    from user_list import USUARIOS
+    LISTA_USUARIOS = {}
+    for x in USUARIOS:
+        LISTA_USUARIOS[x[0]] = User(x[0], x[1], x[2])
+    #print LISTA_USUARIOS
+except:
+    print "A lista de usuarios nao esta configurada ou disponivel"
+    raise
+
+
+@login_manager.user_loader
+def load_user(userid):
+    return LISTA_USUARIOS[userid]
+
+
+def getUsuariosId():
+    return [u[0] for u in USUARIOS]
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST" and "username" in request.form:
+        username = request.form["username"]
+        senha = request.form["password"]
+        if username in getUsuariosId():
+            u = LISTA_USUARIOS[username]
+            if u.senha_valida(senha):
+                remember = request.form.get("remember", "no") == "yes"
+                if login_user(u, remember=remember):
+                    flash("Logged in!")
+                    return redirect(request.args.get("next") or url_for("index"))
+                else:
+                    flash("Sorry, but you could not log in.")
+        else:
+            flash(u"Invalid username.")
+    return render_template("login.html")
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect('login')
 
 #---------------------------------------------------------------------
 
@@ -98,11 +189,13 @@ def getDimension(filename):
 
 
 @app.route('/')
+@login_required
 def index():
-    return render_template('index.html')
+    return render_template('index.html', current_user=current_user)
 
 
 @app.route('/upload', methods=['GET', 'POST'])
+@login_required
 def upload():
     #print "Uploading..."
     if request.method == 'POST':
@@ -144,6 +237,7 @@ def upload():
 
 
 @app.route('/lista-videos')
+@login_required
 def lista():
     arquivos = []
     for dirname, dirnames, filenames in os.walk(UPLOADED_FILES_DEST):

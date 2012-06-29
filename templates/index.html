@@ -1,4 +1,4 @@
-<html lang="pt-br">
+﻿<html lang="pt-br">
     <head>
         <link href="/static/ui/css/ui-lightness/jquery-ui-1.8.21.custom.css" rel="stylesheet" type="text/css">
             
@@ -167,6 +167,13 @@
         </script>
     </head>
     <body>
+        <p>
+        {% if current_user.is_authenticated() %}
+            Welcome, {{ current_user.nome }} | <a href="{{ url_for('logout') }}">log out</a>
+        {% else %}
+            You are not logged in | <a href="{{ url_for('login') }}">log in</a>
+        {% endif %}
+        </p>
         <div id="uploader-collumn">
             <form id="form1" enctype="multipart/form-data" method="post" action="/upload">
               <div class="row">
