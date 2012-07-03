@@ -1,0 +1,12 @@
+# -*- coding: utf-8 -*-
+
+UPLOADED_FILES_DEST = '/home/berlotto/Desenvolvimento/upvideos_git/uploads/'
+
+UPLOADED_FILES_ALLOW = set(['ogg', 'ogv', 'webm', 'mp4'])
+UPLOADED_FILES_DENY = ''
+APP_PORT = 5000
+APP_HOST = "0.0.0.0"
+APP_URL = 'localhost:5000'
+
+#pode utilizar o script "gen_key.py"
+SECRET_KEY = "C+od7WQSc4ttTR1bIpWq4Sx1NHEsnKgBm+FD1kF/VB8="
