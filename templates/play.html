@@ -4,16 +4,13 @@
         <script src="http://vjs.zencdn.net/c/video.js"></script>
     </head>
     <body>
-        
-        <h1>V&iacute;deo: <em>{{filename}}</em></h1>
-        
         <video id="{{filename}}" class="video-js vjs-default-skin" controls
             preload="auto" width="{{w}}" height="{{h}}"
             {% if poster %}
             poster="http://{{url}}/poster/{{filename}}"
             {% endif %}
             data-setup="{}">
-            <source src="http://{{url}}/v/{{filename}}" type='video/mp4'>
+            <source src="http://{{url}}/v/{{filename}}" type='video/ogg'>
         </video>
         
     </body>

@@ -27,6 +27,7 @@ import sys
 import os
 import time
 import re
+from shutil import copyfile
 from stat import *
 from werkzeug import secure_filename
 
@@ -41,6 +42,8 @@ APP_PORT = 8000
 APP_HOST = "0.0.0.0"
 APP_URL = 'localhost:8000'
 SECRET_KEY = "yeah, not actually a secret"
+DEFAULT_VIDEO_SIZE = '500x400' #Tamanho default, width:height
+DEFAULT_VIDEO_POSTER = 'default_poster.png'
 #---------------------------------------------------------------------
 
 try:
@@ -101,7 +104,6 @@ try:
     LISTA_USUARIOS = {}
     for x in USUARIOS:
         LISTA_USUARIOS[x[0]] = User(x[0], x[1], x[2])
-    #print LISTA_USUARIOS
 except:
     print "A lista de usuarios nao esta configurada ou disponivel"
     raise
@@ -148,7 +150,6 @@ def allowed_file(filename):
     '''
     Verifica as extensoes permitidas para os videos.
     '''
-    print "Verifiing %s " % filename
     return '.' in filename and filename.rsplit('.', 1)[1] in UPLOADED_FILES_ALLOW
 
 
@@ -197,28 +198,31 @@ def index():
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
-    #print "Uploading..."
     if request.method == 'POST':
-        print "Tem", len(request.files), "arquivos!", request.form['size']
         if len(request.files) <= 0:
             return "Voc&ecirc; n&atilde;o enviou nenhum v&iacute;deo."
         try:
             f = request.files['fileToUpload']
             if allowed_file(f.filename):
-                #print dir(f)
                 filename = secure_filename(f.filename)
                 f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 #Grava as informacoes adicionais em um arquivo texto
                 file_infos = open("%s.txt" % os.path.join(app.config['UPLOAD_FOLDER'], filename)[:-4], 'w')
-                file_infos.write("SIZE=%s" % request.form['size'])
+                if(request.form['size'] and request.form['size'] != 'x'):
+                    file_infos.write("SIZE=%s" % request.form['size'])
+                else:
+                    file_infos.write("SIZE=%s" % DEFAULT_VIDEO_SIZE)
                 file_infos.close()
                 #Trata o poster
                 if len(request.files) > 1:
-                    print "Saving poster"
-                    poster_file = request.files['poster']
-                    print poster_file.filename
-                    pFileName = "poster_%s_%s" % (secure_filename(filename), secure_filename(poster_file.filename))
-                    poster_file.save(os.path.join(app.config['UPLOAD_FOLDER'], pFileName))
+                    if request.files['poster']:
+                        poster_file = request.files['poster']
+                        pFileName = "poster_%s_%s" % (secure_filename(filename), secure_filename(poster_file.filename))
+                        poster_file.save(os.path.join(app.config['UPLOAD_FOLDER'], pFileName))
+                else:
+                    pFileName = "poster_%s_%s" % (secure_filename(filename), secure_filename(DEFAULT_VIDEO_POSTER))
+                    copyfile(os.path.join(app.config['UPLOAD_FOLDER'], DEFAULT_VIDEO_POSTER),
+                             os.path.join(app.config['UPLOAD_FOLDER'], pFileName))
                 return "Seu arquivo <i>%s</i> foi recebido com sucesso!" % filename
             else:
                 return "Exten&ccedil;&atilde;o de arquivo n&atilde;o permitida!"
@@ -242,7 +246,6 @@ def lista():
     arquivos = []
     for dirname, dirnames, filenames in os.walk(UPLOADED_FILES_DEST):
         for filename in filenames:
-            #print os.path.join(dirname, filename)
             if allowed_file(filename):
                 st = os.stat(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 arquivos.append({'filename': filename, 'size': getSize(st[ST_SIZE]),
@@ -285,5 +288,21 @@ def snippet(filename):
     return response
     #return render_template('snippet.html', filename=filename)
 
+
+@app.route('/delete/<videoname>')
+def delete(videoname):
+    #deleta o video
+    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], videoname))
+    #deleta o poster
+    f = re.compile('^poster_%s' % videoname)
+    for dirname, dirnames, filenames in os.walk(UPLOADED_FILES_DEST):
+        for filename in filenames:
+            if f.match(filename):
+                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                break
+    #deleta o arquivo do tamanho do video
+    os.remove("%s.txt" % os.path.join(app.config['UPLOAD_FOLDER'], videoname)[:-4])
+    return redirect('/')
+
 if __name__ == "__main__":
-    app.run(debug=True, port=APP_PORT, host=APP_HOST)
+    app.run(debug=False, port=APP_PORT, host=APP_HOST)

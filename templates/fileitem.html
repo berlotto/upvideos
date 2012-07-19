@@ -5,6 +5,7 @@
     {% if file.poster %}
     <a href="" id="icon-poster" filename="{{file.filename}}"></a>
     {% endif %}
+    <a href="/delete/{{file.filename}}" title="Deseja realmente EXCLUIR este v&iacute;deo '<i>{{file.filename}}</i>' ?" id="icon-del"></a>
     <a href="http://{{url}}/v/{{file.filename}}">{{file.filename}}</a><br/>
     <span id="filesize">Tamanho: {{file.size}}</span><br/>
     <span id="filesize">Data: {{file.date}}</span>

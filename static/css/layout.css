@@ -60,6 +60,16 @@ body{
     background-repeat: no-repeat;
 }
 
+#icon-del{
+    width: 32px;
+    height: 32px;
+    float: right;
+    margin-right: 5px;
+    background-image: url('/static/img/delete.png');
+    background-position: 0px 0px;
+    background-repeat: no-repeat;
+}
+
 #s-code{
     width: 100%;
     height: 100%;
