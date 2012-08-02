@@ -1,21 +1,21 @@
 ﻿<html lang="pt-br">
     <head>
-        <link href="/static/ui/css/ui-lightness/jquery-ui-1.8.21.custom.css" rel="stylesheet" type="text/css">
+        <link href="{{url_for('static', filename='ui/css/ui-lightness/jquery-ui-1.8.21.custom.css')}}" rel="stylesheet" type="text/css">
             
-        <script type="text/javascript" src="/static/ui/js/jquery-1.7.2.min.js"></script>
-        <script type="text/javascript" src="/static/ui/js/jquery-ui-1.8.21.custom.min.js"></script>
+        <script type="text/javascript" src="{{url_for('static', filename='ui/js/jquery-1.7.2.min.js')}}"></script>
+        <script type="text/javascript" src="{{url_for('static', filename='ui/js/jquery-ui-1.8.21.custom.min.js')}}"></script>
         
-        <script type="text/javascript" src="/static/js/jquery.snippet.min.js"></script>
-        <script type="text/javascript" src="/static/js/jquery.easy-confirm-dialog.js"></script>
+        <script type="text/javascript" src="{{url_for('static', filename='js/jquery.snippet.min.js')}}"></script>
+        <script type="text/javascript" src="{{url_for('static', filename='js/jquery.easy-confirm-dialog.js')}}"></script>
         <!--
         HTML 5 Upload template based on :
         http://www.matlus.com/html5-file-upload-with-progress/
         -->
         
-        <link href="/static/css/uploader.css" rel="stylesheet" type="text/css">
-        <link href="/static/css/layout.css" rel="stylesheet" type="text/css">
+        <link href="{{url_for('static', filename='css/uploader.css')}}" rel="stylesheet" type="text/css">
+        <link href="{{url_for('static', filename='css/layout.css')}}" rel="stylesheet" type="text/css">
             
-        <link href="/static/css/jquery.snippet.min.css" rel="stylesheet" type="text/css">
+        <link href="{{url_for('static', filename='css/jquery.snippet.min.css')}}" rel="stylesheet" type="text/css">
         
         <script type="text/javascript">
         var bytesUploaded = 0;
@@ -127,7 +127,7 @@
                 $('a#icon-code').click(function(){
                     //alert('clicado ' + $(this).attr('filename'));
                     $('#divSnippet').attr('title','Copie o codigo para seu site');
-                    $('#divSnippet').load('/snippet/' + $(this).attr('filename'), function(){
+                    $('#divSnippet').load('snippet/' + $(this).attr('filename'), function(){
                         $('#divSnippet').dialog({
                             modal: true,
                             width: 900,
@@ -140,7 +140,7 @@
                 $('a#icon-play').click(function(){
                     //alert('clicado ' + $(this).attr('filename'));
                     $('#divSnippet').attr('title','Veja o video');
-                    $('#divSnippet').load('/play/' + $(this).attr('filename'));
+                    $('#divSnippet').load('play/' + $(this).attr('filename'));
                     $('#divSnippet').dialog({
                         modal: true,
                         width: 800,
@@ -152,7 +152,7 @@
                 $('a#icon-poster').click(function(){
                     //alert('clicado ' + $(this).attr('filename'));
                     $('#divSnippet').attr('title','Poster do video');
-                    $('#divSnippet').load('/poster/view/' + $(this).attr('filename'));
+                    $('#divSnippet').load('poster/view/' + $(this).attr('filename'));
                     $('#divSnippet').dialog({
                         modal: true,
                         width: 640,

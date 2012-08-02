@@ -51,7 +51,7 @@ try:
 except:
     pass
 
-app = Flask(__name__)
+app = Flask(__name__, static_path = '/upvideos_static', static_url_path = '/upvideos_static')
 app.config['UPLOAD_FOLDER'] = UPLOADED_FILES_DEST
 app.config['URL'] = APP_URL
 app.config['SECRET_KEY'] = SECRET_KEY
@@ -305,4 +305,4 @@ def delete(videoname):
     return redirect('/')
 
 if __name__ == "__main__":
-    app.run(debug=False, port=APP_PORT, host=APP_HOST)
+    app.run(debug=True, port=APP_PORT, host=APP_HOST)

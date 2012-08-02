@@ -1,5 +1,5 @@
 body{
-    background-image: url('/static/img/bg.jpg');
+    background-image: url('../img/bg.jpg');
 }
 
 #uploader-collumn{
@@ -35,7 +35,7 @@ body{
     width: 32px;
     height: 32px;
     float: right;
-    background-image: url('/static/img/code.png');
+    background-image: url('../img/code.png');
     background-position: 0px 0px;
     background-repeat: no-repeat;
 }
@@ -45,7 +45,7 @@ body{
     height: 32px;
     float: left;
     margin-right: 5px;
-    background-image: url('/static/img/play2.png');
+    background-image: url('../img/play2.png');
     background-position: 0px 0px;
     background-repeat: no-repeat;
 }
@@ -55,7 +55,7 @@ body{
     height: 32px;
     float: right;
     margin-right: 5px;
-    background-image: url('/static/img/poster.png');
+    background-image: url('../img/poster.png');
     background-position: 0px 0px;
     background-repeat: no-repeat;
 }
@@ -65,7 +65,7 @@ body{
     height: 32px;
     float: right;
     margin-right: 5px;
-    background-image: url('/static/img/delete.png');
+    background-image: url('../img/delete.png');
     background-position: 0px 0px;
     background-repeat: no-repeat;
 }
